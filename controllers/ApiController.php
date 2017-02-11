@@ -34,7 +34,15 @@ class ApiController extends Controller
 
     public function actionProblemCategories()
     {
-        return ['results' => Chat::getProblemCategories()];
+        $problemList = Chat::getProblemCategories();
+        $response = [];
+        foreach ($problemList as $index => $problem) {
+            $response[] = [
+                'id' => $index,
+                'caption' => $problem
+            ];
+        }
+        return ['results' => $response];
     }
 
 }
