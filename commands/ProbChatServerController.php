@@ -12,11 +12,12 @@ class ProbChatServerController extends Controller
     public function actionIndex()
     {
         $server = IoServer::factory(
-                new HttpServer(
+            new HttpServer(
                 new WsServer(
-                new ProbChat()
+                    new ProbChat()
                 )
-                ), 8080
+            ),
+            8080
         );
         $server->run();
 

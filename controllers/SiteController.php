@@ -63,6 +63,11 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
+    public function actionChat()
+    {
+        return $this->render('chat');
+    }
+
     /**
      * Login action.
      *

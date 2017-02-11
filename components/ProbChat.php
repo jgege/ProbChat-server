@@ -7,7 +7,7 @@ class ProbChat implements MessageComponentInterface {
    protected $clients;
 
     public function __construct() {
-        echo '### ProbChatServer ###';
+        echo '### ProbChatServer ###' . PHP_EOL;
         $this->clients = new \SplObjectStorage;
     }
 
