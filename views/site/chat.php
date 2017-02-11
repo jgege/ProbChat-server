@@ -1,5 +1,13 @@
+<?php
+    use Yii;
+?>
+
+
+<?php
+    $websocketUrl = (Yii::$app->params['chatServer']['url'] . ':' . Yii::$app->params['chatServer']['port']);
+?>
 <script>
-var conn = new WebSocket('ws://dev.b116.ml:8080');
+var conn = new WebSocket('<?= $websocketUrl ?>');
 conn.onopen = function(e) {
     console.log("Connection established!");
 };

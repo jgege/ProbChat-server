@@ -1,13 +1,16 @@
 <?php
 namespace app\components;
+
+use Yii;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
 class ProbChat implements MessageComponentInterface {
-   protected $clients;
+    protected $clients;
 
     public function __construct() {
         echo '### ProbChatServer ###' . PHP_EOL;
+        echo 'Listening on port: ' . Yii::$app->params['chatServer']['port'];
         $this->clients = new \SplObjectStorage;
     }
 

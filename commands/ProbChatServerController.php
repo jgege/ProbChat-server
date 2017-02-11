@@ -1,5 +1,6 @@
 <?php namespace app\commands;
 
+use Yii;
 use app\components\ProbChat;
 use yii\console\Controller;
 use Ratchet\Server\IoServer;
@@ -17,7 +18,7 @@ class ProbChatServerController extends Controller
                     new ProbChat()
                 )
             ),
-            8080
+            Yii::$app->params['chatServer']['port']
         );
         $server->run();
 

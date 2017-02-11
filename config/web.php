@@ -1,6 +1,16 @@
 <?php
 
 $params = require(__DIR__ . '/params.php');
+if(file_exists(__DIR__ . '/params.local.php')) {
+    $paramsLocal = require(__DIR__ . '/params.local.php');
+    $params = array_merge($params, $paramsLocal);
+}
+
+$db = require(__DIR__ . '/db.php');
+if(file_exists(__DIR__ . '/db.local.php')) {
+    $dbLocal = require(__DIR__ . '/db.local.php');
+    $db = array_merge($db, $dbLocal);
+}
 
 $config = [
     'id' => 'basic',
@@ -37,7 +47,7 @@ $config = [
                 ],
             ],
         ],
-        'db' => require(__DIR__ . '/db.php'),
+        'db' => $db,
         /*
         'urlManager' => [
             'enablePrettyUrl' => true,
