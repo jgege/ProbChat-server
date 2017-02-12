@@ -91,7 +91,7 @@ class ProbChat implements MessageComponentInterface {
     {
         switch ($jsonMsg['action']) {
             case 'matching':
-                $this->matchUser($user, $jsonMsg['problem']);
+                $this->matchUser($user, $jsonMsg['id']);
                 break;
             case 'message':
                 $message = $this->storeMessage($user, $jsonMsg['msg']);

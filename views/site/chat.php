@@ -50,7 +50,7 @@ function showMessage(message) {
 
 function joinLobby() {
     conn.send(JSON.stringify({
-        problem: 'family',
+        id: 'family',
         action: 'matching',
     }));
 }
