@@ -56,6 +56,11 @@ class ProbChat implements MessageComponentInterface {
 
     private function disconnectUser(ConnectionInterface $conn) {
         $this->clients->detach($conn);
+        $this->removeFromSessions($conn);
+    }
+
+    private function removeFromSessions(ConnectionInterface $conn)
+    {
         $chatSession = $this->getChatSessionByUser($conn);
         $chatPartnerList = $chatSession->getEveryone();
         if (!$chatSession->removeUser($conn)) {
@@ -65,6 +70,7 @@ class ProbChat implements MessageComponentInterface {
             if (count($chatPartnerList) < 2) {
                 $this->removeFromUserChatSessionRegistry($partner);
             }
+            echo 'Removing: ' . $partner->resourceId . ' - ' . $conn->resourceId . PHP_EOL;
             if ($partner != $conn) {
                 $partner->send(Json::encode([
                     'action' => 'partner_disconnected',
@@ -96,6 +102,9 @@ class ProbChat implements MessageComponentInterface {
                 break;
             case 'message_update':
                 $this->updateMessage($user);
+                break;
+            case 'quit':
+                $this->removeFromSessions($conn);
                 break;
             case 'disconnect':
                 $this->disconnectUser($user);
