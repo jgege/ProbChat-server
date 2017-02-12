@@ -65,10 +65,12 @@ class ProbChat implements MessageComponentInterface {
             if (count($chatPartnerList) < 2) {
                 $this->removeFromUserChatSessionRegistry($partner);
             }
-            $partner->send(Json::encode([
-                'action' => 'partner_disconnected',
-                'chatSessionUserCount' => $chatSession->getUserCount(),
-            ]));
+            if ($partner != $conn) {
+                $partner->send(Json::encode([
+                    'action' => 'partner_disconnected',
+                    'chatSessionUserCount' => $chatSession->getUserCount(),
+                ]));
+            }
         }
         $this->removeFromUserChatSessionRegistry($conn);
         if ($chatSession->getUserCount() < 2) {
