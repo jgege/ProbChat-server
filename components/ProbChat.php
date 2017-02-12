@@ -71,7 +71,7 @@ class ProbChat implements MessageComponentInterface {
                 $this->removeFromUserChatSessionRegistry($partner);
             }
             echo 'Removing: ' . $partner->resourceId . ' - ' . $conn->resourceId . PHP_EOL;
-            if ($partner != $conn) {
+            if ($partner->resourceId != $conn->resourceId) {
                 $partner->send(Json::encode([
                     'action' => 'partner_disconnected',
                     'chatSessionUserCount' => $chatSession->getUserCount(),
