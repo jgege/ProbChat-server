@@ -15,6 +15,24 @@ conn.onopen = function(e) {
 
 conn.onmessage = function(e) {
     //console.log(e.data);
+    var response = JSON.parse(e.data);
+    switch(response['action']) {
+        case 'message':
+            showMessage(response['msgs']);
+            break;
+        case 'partner_disconnected':
+            if (response['chatSessionUserCount'] < 2) {
+                console.log('looking for the next chat partner');
+                joinLobby();
+            } else {
+                console.log('stayin');
+            }
+            break;
+        default:
+            console.log('default :(');
+            console.log(response);
+            break;
+}
     showMessage('BlueDog: ' + e.data);
 };
 

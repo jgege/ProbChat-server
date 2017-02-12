@@ -15,7 +15,7 @@ class ProbChat implements MessageComponentInterface {
 
     public function __construct() {
         echo '### ProbChatServer ###' . PHP_EOL;
-        echo 'Listening on port: ' . Yii::$app->params['chatServer']['port'];
+        echo 'Listening on port: ' . Yii::$app->params['chatServer']['port'] . PHP_EOL;
         $this->clients = new \SplObjectStorage;
         $problemList = Chat::getProblemCategories();
         foreach ($problemList as $key => $problem) {
@@ -60,9 +60,25 @@ class ProbChat implements MessageComponentInterface {
 
     public function onClose(ConnectionInterface $conn) {
         // The connection is closed, remove it, as we can no longer send it messages
-        $this->clients->detach($conn);
+        $this->disconnectUser($conn);
 
         echo "Connection {$conn->resourceId} has disconnected\n";
+    }
+
+    private function disconnectUser(ConnectionInterface $conn) {
+        $this->clients->detach($conn);
+        $chatSession = $this->getChatSessionByUser($conn);
+        $chatPartnerList = $chatSession->getEveryoneExcludingThisUser($conn);
+        if (!$chatSession->removeUser($conn)) {
+            echo 'Error on removing user from chat session' . PHP_EOL;
+        }
+        foreach ($chatPartnerList as $partner) {
+            $partner->send(Json::encode([
+                'action' => 'partner_disconnected',
+                'chatSessionUserCount' => $chatSession->getUserCount(),
+            ]));
+        }
+        $this->removeFromUserChatSessionRegistry($conn);
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -93,10 +109,14 @@ class ProbChat implements MessageComponentInterface {
     {
         $chatSessionList = $this->chatSessions[$problemCategory];
         foreach ($chatSessionList as &$chatSession) {
-            if ($chatSession->hasFreeSpace()) {
+            if (!$chatSession->userInAlready($user) && $chatSession->hasFreeSpace()) {
                 $chatSession->addUser($user);
                 $this->addToUserChatSessionRegistry($user, $chatSession);
+                echo 'Users matched: ' . $chatSession->testIds() . PHP_EOL;
                 $user->send(Json::encode(['action' => 'match']));
+                foreach($chatSession->getEveryoneExcludingThisUser($user) as $member) {
+                    $member->send(Json::encode(['action' => 'match']));
+                }
                 return;
             }
         }
@@ -145,5 +165,10 @@ class ProbChat implements MessageComponentInterface {
     private function addToUserChatSessionRegistry(ConnectionInterface $user, $chatSession)
     {
         $this->userChatSessionRegistry[$user->resourceId] = $chatSession;
+    }
+
+    private function removeFromUserChatSessionRegistry(ConnectionInterface $user)
+    {
+        unset($this->userChatSessionRegistry[$user->resourceId]);
     }
 }

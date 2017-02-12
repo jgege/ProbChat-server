@@ -5,6 +5,7 @@ use Ratchet\ConnectionInterface;
 
 class ChatSession extends \yii\base\Model
 {
+    public $problem;
     private $_slots = 2;
     private $_connectedClients;
 
@@ -15,8 +16,12 @@ class ChatSession extends \yii\base\Model
         return false;
     }
 
+    public function getUserCount() {
+        return count($this->_connectedClients);
+    }
+
     public function hasFreeSpace() {
-        return (count($this->_connectedClients) < $this->_slots);
+        return ($this->getUserCount() < $this->_slots);
     }
 
     public function addUser(ConnectionInterface $client) {
@@ -42,5 +47,23 @@ class ChatSession extends \yii\base\Model
         }
 
         return $result;
+    }
+
+    public function userInAlready($user) {
+        foreach ($this->_connectedClients as $member) {
+            if ($member == $user) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function testIds() {
+        $idList = '';
+        foreach ($this->_connectedClients as $member) {
+            $idList .= $member->resourceId . ' - ';
+        }
+        return $idList;
     }
 }
