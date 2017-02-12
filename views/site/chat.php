@@ -10,6 +10,7 @@
 var conn = new WebSocket('<?= $websocketUrl ?>');
 conn.onopen = function(e) {
     console.log("Connection established!");
+    joinLobby();
 };
 
 conn.onmessage = function(e) {
@@ -17,13 +18,23 @@ conn.onmessage = function(e) {
     showMessage('BlueDog: ' + e.data);
 };
 
-chat = function(message) {
-    conn.send(message);
+function chat(message) {
+    conn.send(JSON.stringify({
+        msg: message,
+        action: 'message',
+    }));
     showMessage('You: ' + message);
 }
 
-showMessage = function(message) {
+function showMessage(message) {
     console.log((new Date) + ' ' + message);
+}
+
+function joinLobby() {
+    conn.send(JSON.stringify({
+        problem: 'family',
+        action: 'matching',
+    }));
 }
 
 </script>
