@@ -97,6 +97,7 @@ class ProbChat implements MessageComponentInterface {
                 break;
             case 'disconnect':
                 $this->disconnectUser($user);
+                $user->close();
                 break;
             default:
                 break;
