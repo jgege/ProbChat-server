@@ -104,7 +104,7 @@ class ProbChat implements MessageComponentInterface {
                 $this->updateMessage($user);
                 break;
             case 'quit':
-                $this->removeFromSessions($conn);
+                $this->removeFromSessions($user);
                 break;
             case 'disconnect':
                 $this->disconnectUser($user);
