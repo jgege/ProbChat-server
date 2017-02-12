@@ -38,6 +38,10 @@ class ChatSession extends \yii\base\Model
         return false;
     }
 
+    public function getEveryone() {
+        return $this->_connectedClients;
+    }
+
     public function getEveryoneExcludingThisUser($client) {
         $result = [];
         foreach ($this->_connectedClients as $member) {

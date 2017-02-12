@@ -45,17 +45,6 @@ class ProbChat implements MessageComponentInterface {
         }
 
         $this->chooseAction($from, $jsonMsg);
-
-        /*$numRecv = count($this->clients) - 1;
-        echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
-            , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
-
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
-            }
-        }*/
     }
 
     public function onClose(ConnectionInterface $conn) {
@@ -68,17 +57,23 @@ class ProbChat implements MessageComponentInterface {
     private function disconnectUser(ConnectionInterface $conn) {
         $this->clients->detach($conn);
         $chatSession = $this->getChatSessionByUser($conn);
-        $chatPartnerList = $chatSession->getEveryoneExcludingThisUser($conn);
+        $chatPartnerList = $chatSession->getEveryone();
         if (!$chatSession->removeUser($conn)) {
             echo 'Error on removing user from chat session' . PHP_EOL;
         }
         foreach ($chatPartnerList as $partner) {
+            if (count($chatPartnerList) < 2) {
+                $this->removeFromUserChatSessionRegistry($partner);
+            }
             $partner->send(Json::encode([
                 'action' => 'partner_disconnected',
                 'chatSessionUserCount' => $chatSession->getUserCount(),
             ]));
         }
         $this->removeFromUserChatSessionRegistry($conn);
+        if ($chatSession->getUserCount() < 2) {
+            $this->removeChatSession($chatSession);
+        }
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -112,10 +107,11 @@ class ProbChat implements MessageComponentInterface {
             if (!$chatSession->userInAlready($user) && $chatSession->hasFreeSpace()) {
                 $chatSession->addUser($user);
                 $this->addToUserChatSessionRegistry($user, $chatSession);
-                echo 'Users matched: ' . $chatSession->testIds() . PHP_EOL;
-                $user->send(Json::encode(['action' => 'match']));
-                foreach($chatSession->getEveryoneExcludingThisUser($user) as $member) {
-                    $member->send(Json::encode(['action' => 'match']));
+
+                if (!$chatSession->hasFreeSpace()) {
+                    foreach($chatSession->getEveryone() as $member) {
+                        $member->send(Json::encode(['action' => 'match']));
+                    }
                 }
                 return;
             }
@@ -123,6 +119,7 @@ class ProbChat implements MessageComponentInterface {
         unset($chatSession);
 
         $chatSession = new ChatSession();
+        $chatSession->problem = $problemCategory;
         $chatSession->addUser($user);
         $this->chatSessions[$problemCategory][] = $chatSession;
         $this->addToUserChatSessionRegistry($user, $chatSession);
@@ -170,5 +167,14 @@ class ProbChat implements MessageComponentInterface {
     private function removeFromUserChatSessionRegistry(ConnectionInterface $user)
     {
         unset($this->userChatSessionRegistry[$user->resourceId]);
+    }
+
+    private function removeChatSession(ChatSession $chatSession) {
+        foreach ($this->chatSessions[$chatSession->problem] as $id => $session) {
+            if ($session == $chatSession) {
+                unset($this->chatSessions[$chatSession->problem][$id]);
+                return;
+            }
+        }
     }
 }
